@@ -3,17 +3,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 const CreateSurvey = () => {
   const [questions, setQuestions] = useState([]);
   const [newQuestion, setNewQuestion] = useState("");
   const [answerType, setAnswerType] = useState("text");
+  const [textAnswer, setTextAnswer] = useState("");
+  const [numericAnswer, setNumericAnswer] = useState("");
 
   const addQuestion = () => {
     if (newQuestion.trim() !== "") {
-      setQuestions([...questions, { text: newQuestion, type: answerType }]);
+      setQuestions([...questions, { 
+        text: newQuestion, 
+        type: answerType,
+        answer: answerType === "text" ? textAnswer : numericAnswer
+      }]);
       setNewQuestion("");
       setAnswerType("text");
+      setTextAnswer("");
+      setNumericAnswer("");
     }
   };
 
@@ -23,8 +32,8 @@ const CreateSurvey = () => {
 
   const sendSurvey = () => {
     const surveyBody = questions
-      .map((q, index) => `${index + 1}. ${q.text} (${q.type === "text" ? "Plain Text" : "Numeric"})`)
-      .join("\n");
+      .map((q, index) => `${index + 1}. ${q.text} (${q.type === "text" ? "Plain Text" : "Numeric"})\nAnswer: ${q.answer}`)
+      .join("\n\n");
     const mailtoLink = `mailto:?subject=New Survey&body=${encodeURIComponent(surveyBody)}`;
     window.location.href = mailtoLink;
   };
@@ -45,23 +54,47 @@ const CreateSurvey = () => {
         ))}
       </div>
       
-      <div className="flex gap-4 mb-6">
+      <div className="flex flex-col gap-4 mb-6">
         <Input
           placeholder="Enter your question"
           value={newQuestion}
           onChange={(e) => setNewQuestion(e.target.value)}
-          className="flex-grow"
         />
-        <Select value={answerType} onValueChange={setAnswerType}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Answer type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="text">Plain Text</SelectItem>
-            <SelectItem value="number">Numeric</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button onClick={addQuestion}>Add</Button>
+        <div className="flex gap-4">
+          <Select value={answerType} onValueChange={setAnswerType}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Answer type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="text">Plain Text</SelectItem>
+              <SelectItem value="number">Numeric</SelectItem>
+            </SelectContent>
+          </Select>
+          {answerType === "text" && (
+            <div className="flex-grow">
+              <Label htmlFor="textAnswer" className="sr-only">Text Answer</Label>
+              <Input
+                id="textAnswer"
+                placeholder="Enter sample text answer"
+                value={textAnswer}
+                onChange={(e) => setTextAnswer(e.target.value)}
+              />
+            </div>
+          )}
+          {answerType === "number" && (
+            <div className="w-32">
+              <Label htmlFor="numericAnswer" className="sr-only">Numeric Answer</Label>
+              <Input
+                id="numericAnswer"
+                type="number"
+                placeholder="Enter number"
+                value={numericAnswer}
+                onChange={(e) => setNumericAnswer(e.target.value)}
+              />
+            </div>
+          )}
+        </div>
+        <Button onClick={addQuestion}>Add Question</Button>
       </div>
       
       <Button onClick={sendSurvey} className="w-full">Send Survey</Button>
