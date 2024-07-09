@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Trash2 } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion, AnimatePresence } from "framer-motion";
 
 const CreateSurvey = () => {
   const [questions, setQuestions] = useState([]);
@@ -84,118 +86,141 @@ const CreateSurvey = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Survey Creation</h1>
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <h1 className="text-4xl font-bold mb-8 text-center text-primary">Survey Creation</h1>
       
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Questions</h2>
-        {questions.map((question, index) => (
-          <div key={index} className="flex items-center justify-between mb-2 p-2 bg-secondary rounded">
-            <span>{question.text} ({question.type})</span>
-            <Button variant="destructive" size="icon" onClick={() => removeQuestion(index)}>
-              <Trash2 className="h-4 w-4" />
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Questions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AnimatePresence>
+            {questions.map((question, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center justify-between mb-2 p-3 bg-secondary rounded-lg"
+              >
+                <span className="text-sm">{question.text} ({question.type})</span>
+                <Button variant="destructive" size="icon" onClick={() => removeQuestion(index)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Add New Question</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-4 mb-6">
+            <Input
+              placeholder="Enter your question"
+              value={newQuestion}
+              onChange={(e) => setNewQuestion(e.target.value)}
+              className="text-lg"
+            />
+            <div className="flex gap-4">
+              <Select value={answerType} onValueChange={setAnswerType}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Answer type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="text">Plain Text</SelectItem>
+                  <SelectItem value="number">Numeric</SelectItem>
+                  <SelectItem value="slider">Slider</SelectItem>
+                </SelectContent>
+              </Select>
+              {answerType === "text" && (
+                <div className="flex-grow">
+                  <Label htmlFor="textAnswer" className="sr-only">Text Answer</Label>
+                  <Input
+                    id="textAnswer"
+                    placeholder="Enter sample text answer"
+                    value={textAnswer}
+                    onChange={(e) => setTextAnswer(e.target.value)}
+                  />
+                </div>
+              )}
+              {answerType === "number" && (
+                <div className="w-32">
+                  <Label htmlFor="numericAnswer" className="sr-only">Numeric Answer</Label>
+                  <Input
+                    id="numericAnswer"
+                    type="number"
+                    placeholder="Enter number"
+                    value={numericAnswer}
+                    onChange={(e) => setNumericAnswer(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
+            {answerType === "slider" && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="sliderMin">Min Value</Label>
+                  <Input
+                    id="sliderMin"
+                    type="number"
+                    value={sliderMin}
+                    onChange={(e) => setSliderMin(Number(e.target.value))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="sliderMax">Max Value</Label>
+                  <Input
+                    id="sliderMax"
+                    type="number"
+                    value={sliderMax}
+                    onChange={(e) => setSliderMax(Number(e.target.value))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="sliderStep">Step</Label>
+                  <Input
+                    id="sliderStep"
+                    type="number"
+                    value={sliderStep}
+                    onChange={(e) => setSliderStep(Number(e.target.value))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="sliderDefault">Default Value</Label>
+                  <Input
+                    id="sliderDefault"
+                    type="number"
+                    value={sliderDefault}
+                    onChange={(e) => setSliderDefault(Number(e.target.value))}
+                  />
+                </div>
+              </div>
+            )}
+            {answerType === "slider" && (
+              <div className="mt-4">
+                <Label>Preview</Label>
+                <Slider
+                  min={sliderMin}
+                  max={sliderMax}
+                  step={sliderStep}
+                  defaultValue={[sliderDefault]}
+                  className="mt-2"
+                />
+              </div>
+            )}
+            <Button onClick={addQuestion} className="w-full">
+              <Plus className="mr-2 h-4 w-4" /> Add Question
             </Button>
           </div>
-        ))}
-      </div>
+        </CardContent>
+      </Card>
       
-      <div className="flex flex-col gap-4 mb-6">
-        <Input
-          placeholder="Enter your question"
-          value={newQuestion}
-          onChange={(e) => setNewQuestion(e.target.value)}
-        />
-        <div className="flex gap-4">
-          <Select value={answerType} onValueChange={setAnswerType}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Answer type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="text">Plain Text</SelectItem>
-              <SelectItem value="number">Numeric</SelectItem>
-              <SelectItem value="slider">Slider</SelectItem>
-            </SelectContent>
-          </Select>
-          {answerType === "text" && (
-            <div className="flex-grow">
-              <Label htmlFor="textAnswer" className="sr-only">Text Answer</Label>
-              <Input
-                id="textAnswer"
-                placeholder="Enter sample text answer"
-                value={textAnswer}
-                onChange={(e) => setTextAnswer(e.target.value)}
-              />
-            </div>
-          )}
-          {answerType === "number" && (
-            <div className="w-32">
-              <Label htmlFor="numericAnswer" className="sr-only">Numeric Answer</Label>
-              <Input
-                id="numericAnswer"
-                type="number"
-                placeholder="Enter number"
-                value={numericAnswer}
-                onChange={(e) => setNumericAnswer(e.target.value)}
-              />
-            </div>
-          )}
-        </div>
-        {answerType === "slider" && (
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="sliderMin">Min Value</Label>
-              <Input
-                id="sliderMin"
-                type="number"
-                value={sliderMin}
-                onChange={(e) => setSliderMin(Number(e.target.value))}
-              />
-            </div>
-            <div>
-              <Label htmlFor="sliderMax">Max Value</Label>
-              <Input
-                id="sliderMax"
-                type="number"
-                value={sliderMax}
-                onChange={(e) => setSliderMax(Number(e.target.value))}
-              />
-            </div>
-            <div>
-              <Label htmlFor="sliderStep">Step</Label>
-              <Input
-                id="sliderStep"
-                type="number"
-                value={sliderStep}
-                onChange={(e) => setSliderStep(Number(e.target.value))}
-              />
-            </div>
-            <div>
-              <Label htmlFor="sliderDefault">Default Value</Label>
-              <Input
-                id="sliderDefault"
-                type="number"
-                value={sliderDefault}
-                onChange={(e) => setSliderDefault(Number(e.target.value))}
-              />
-            </div>
-          </div>
-        )}
-        {answerType === "slider" && (
-          <div className="mt-4">
-            <Label>Preview</Label>
-            <Slider
-              min={sliderMin}
-              max={sliderMax}
-              step={sliderStep}
-              defaultValue={[sliderDefault]}
-              className="mt-2"
-            />
-          </div>
-        )}
-        <Button onClick={addQuestion}>Add Question</Button>
-      </div>
-      
-      <Button onClick={sendSurvey} className="w-full">Send Survey</Button>
+      <Button onClick={sendSurvey} className="w-full mt-8 text-lg py-6">Send Survey</Button>
     </div>
   );
 };

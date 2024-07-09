@@ -12,14 +12,21 @@ import { cn } from "@/lib/utils";
 import { CircleUser, Menu, Package2 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { navItems } from "../App";
+import { motion } from "framer-motion";
 
 const Layout = () => {
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 justify-between">
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6 justify-between shadow-sm z-10"
+      >
         <DesktopNav />
         <MobileNav />
-      </header>
+        <UserMenu />
+      </motion.header>
       <main className="flex-grow overflow-auto">
         <Outlet />
       </main>
@@ -74,7 +81,7 @@ const MobileNav = () => (
 const UserMenu = () => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
-      <Button variant="secondary" size="icon" className="rounded-full">
+      <Button variant="ghost" size="icon" className="rounded-full">
         <CircleUser className="h-5 w-5" />
         <span className="sr-only">Toggle user menu</span>
       </Button>
@@ -95,11 +102,11 @@ const NavItem = ({ to, children, className }) => (
     to={to}
     className={({ isActive }) =>
       cn(
-        "transition-colors",
+        "transition-colors hover:text-primary",
         isActive
-          ? "text-foreground"
-          : "text-muted-foreground hover:text-foreground",
-        className,
+          ? "text-primary font-semibold"
+          : "text-muted-foreground",
+        className
       )
     }
   >
