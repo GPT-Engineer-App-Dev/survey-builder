@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
@@ -11,19 +12,49 @@ const CreateSurvey = () => {
   const [answerType, setAnswerType] = useState("text");
   const [textAnswer, setTextAnswer] = useState("");
   const [numericAnswer, setNumericAnswer] = useState("");
+  const [sliderMin, setSliderMin] = useState(0);
+  const [sliderMax, setSliderMax] = useState(100);
+  const [sliderStep, setSliderStep] = useState(1);
+  const [sliderDefault, setSliderDefault] = useState(50);
 
   const addQuestion = () => {
     if (newQuestion.trim() !== "") {
-      setQuestions([...questions, { 
-        text: newQuestion, 
+      const questionObject = {
+        text: newQuestion,
         type: answerType,
-        answer: answerType === "text" ? textAnswer : numericAnswer
-      }]);
-      setNewQuestion("");
-      setAnswerType("text");
-      setTextAnswer("");
-      setNumericAnswer("");
+      };
+
+      switch (answerType) {
+        case "text":
+          questionObject.answer = textAnswer;
+          break;
+        case "number":
+          questionObject.answer = numericAnswer;
+          break;
+        case "slider":
+          questionObject.sliderConfig = {
+            min: sliderMin,
+            max: sliderMax,
+            step: sliderStep,
+            default: sliderDefault,
+          };
+          break;
+      }
+
+      setQuestions([...questions, questionObject]);
+      resetForm();
     }
+  };
+
+  const resetForm = () => {
+    setNewQuestion("");
+    setAnswerType("text");
+    setTextAnswer("");
+    setNumericAnswer("");
+    setSliderMin(0);
+    setSliderMax(100);
+    setSliderStep(1);
+    setSliderDefault(50);
   };
 
   const removeQuestion = (index) => {
@@ -32,7 +63,21 @@ const CreateSurvey = () => {
 
   const sendSurvey = () => {
     const surveyBody = questions
-      .map((q, index) => `${index + 1}. ${q.text} (${q.type === "text" ? "Plain Text" : "Numeric"})\nAnswer: ${q.answer}`)
+      .map((q, index) => {
+        let answerDetails = "";
+        switch (q.type) {
+          case "text":
+            answerDetails = `Answer: ${q.answer}`;
+            break;
+          case "number":
+            answerDetails = `Answer: ${q.answer}`;
+            break;
+          case "slider":
+            answerDetails = `Slider range: ${q.sliderConfig.min} to ${q.sliderConfig.max}, Step: ${q.sliderConfig.step}, Default: ${q.sliderConfig.default}`;
+            break;
+        }
+        return `${index + 1}. ${q.text} (${q.type})\n${answerDetails}`;
+      })
       .join("\n\n");
     const mailtoLink = `mailto:?subject=New Survey&body=${encodeURIComponent(surveyBody)}`;
     window.location.href = mailtoLink;
@@ -46,7 +91,7 @@ const CreateSurvey = () => {
         <h2 className="text-xl font-semibold mb-4">Questions</h2>
         {questions.map((question, index) => (
           <div key={index} className="flex items-center justify-between mb-2 p-2 bg-secondary rounded">
-            <span>{question.text} ({question.type === "text" ? "Plain Text" : "Numeric"})</span>
+            <span>{question.text} ({question.type})</span>
             <Button variant="destructive" size="icon" onClick={() => removeQuestion(index)}>
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -68,6 +113,7 @@ const CreateSurvey = () => {
             <SelectContent>
               <SelectItem value="text">Plain Text</SelectItem>
               <SelectItem value="number">Numeric</SelectItem>
+              <SelectItem value="slider">Slider</SelectItem>
             </SelectContent>
           </Select>
           {answerType === "text" && (
@@ -94,6 +140,58 @@ const CreateSurvey = () => {
             </div>
           )}
         </div>
+        {answerType === "slider" && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="sliderMin">Min Value</Label>
+              <Input
+                id="sliderMin"
+                type="number"
+                value={sliderMin}
+                onChange={(e) => setSliderMin(Number(e.target.value))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="sliderMax">Max Value</Label>
+              <Input
+                id="sliderMax"
+                type="number"
+                value={sliderMax}
+                onChange={(e) => setSliderMax(Number(e.target.value))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="sliderStep">Step</Label>
+              <Input
+                id="sliderStep"
+                type="number"
+                value={sliderStep}
+                onChange={(e) => setSliderStep(Number(e.target.value))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="sliderDefault">Default Value</Label>
+              <Input
+                id="sliderDefault"
+                type="number"
+                value={sliderDefault}
+                onChange={(e) => setSliderDefault(Number(e.target.value))}
+              />
+            </div>
+          </div>
+        )}
+        {answerType === "slider" && (
+          <div className="mt-4">
+            <Label>Preview</Label>
+            <Slider
+              min={sliderMin}
+              max={sliderMax}
+              step={sliderStep}
+              defaultValue={[sliderDefault]}
+              className="mt-2"
+            />
+          </div>
+        )}
         <Button onClick={addQuestion}>Add Question</Button>
       </div>
       
